@@ -1,7 +1,20 @@
 import { useState, useEffect } from "react";
 import { CreditCard, Users, LogOut, Plus, Eye, EyeOff, X, Bell, Phone, Mail,
   Calendar, DollarSign, AlertTriangle, ChevronRight, Check, TrendingUp, Shield,
-  Trash2, Star, Target, FileText, ChevronDown, ChevronUp, Zap, Award, Clock } from "lucide-react";
+  Trash2, ChevronDown, ChevronUp, Clock, MessageCircle, Send, ArrowRight } from "lucide-react";
+import { useRef } from "react";
+
+const now = () => new Date().toISOString();
+
+// EmailJS notification
+const sendEmail = async ({to, toName, subject, message}) => {
+  console.log("📧 EmailJS [Demo]:", { to, subject, message: message.slice(0,60)+"..." });
+  // To activate: replace with your EmailJS credentials from emailjs.com (free)
+  // const SERVICE_ID = "YOUR_SERVICE_ID";
+  // const TEMPLATE_ID = "YOUR_TEMPLATE_ID"; 
+  // const PUBLIC_KEY = "YOUR_PUBLIC_KEY";
+  return { success: true, demo: true };
+};
 
 // ─── BRAND ──────────────────────────────────────────────────────
 const BH = { bg:"#0f1c2e", surface:"#1a2b42", card:"#1e3254", border:"#2a4060",
@@ -38,7 +51,7 @@ const healthScore = cards => {
 
 // ─── AUTH ──────────────────────────────────────────────────────
 const AUTH = {
-  "admin@bighousecredit.com": { pw:"BH2024",      role:"admin" },
+  "admin@bighousecredit.com": { pw:"BH2024",       role:"admin" },
   "gian@bighousecredit.com":  { pw:"BHGian2024",  role:"client", cid:"c_gian" },
   "gordis@bighousecredit.com":{ pw:"BHGordis2024",role:"client", cid:"c_gordis" },
   "maria@demo.com":            { pw:"demo123",     role:"client", cid:"c1" },
@@ -48,7 +61,7 @@ const AUTH = {
 // ─── SEED DATA ─────────────────────────────────────────────────
 const SEED = {
   c_gian:{
-    id:"c_gian",name:"Gianfranco Casagrandi",email:"gian@bighousecredit.com",phone:"(904) 555-0100",ronda:3,joined:"2025-06-01",
+    id:"c_gian",name:"Gianfranco Casagrandi",email:"gian@bighousecredit.com",phone:"(904) 555-0100",ronda:3,joined:"2025-06-01",onboarded:true,avatar:"GC",
     advisorNotes:[
       {id:"n1",date:"2026-03-20",text:"Gian — estás listo para Ronda 3. Amex Business Gold es tu próxima movida. Mantén utilización bajo 10% antes de aplicar y estaremos en una posición perfecta."},
       {id:"n2",date:"2026-03-10",text:"CLI aprobado en Chase Ink Cash. Límite subió a $35K. Excelente trabajo manteniendo los pagos puntuales. Eso es lo que construye el perfil para Ronda 3."},
@@ -63,13 +76,13 @@ const SEED = {
       {bank:"Truist",product:"Business Credit Card",limit:"$15,000–$30,000",eta:"Q3 2026",note:"Perfecto tras Ronda 3 para diversificar bancos"},
     ],
     cards:[
-      {id:"k_g1",bank:"Amex",product:"Business Gold",limit:50000,balance:4800,open:"2025-06-15",exp:"2026-09-15",months:15,paymentDue:15,annualFee:295,annualFeeDate:"2026-06-15",signupBonus:{required:15000,spent:14200,deadline:"2026-05-15",reward:"150,000 Membership Rewards pts"},cliEligible:"2025-12-15",network:"Amex",benefits:[{cat:"Publicidad/Software",mult:"4x MR",icon:"💻"},{cat:"Gasolina",mult:"4x MR",icon:"⛽"},{cat:"Restaurantes",mult:"4x MR",icon:"🍽️"},{cat:"Todo lo demás",mult:"1x MR",icon:"🛒"}],perks:["$240 crédito select business anual","Sin límite de puntos MR","Sin foreign transaction fee","Compra protegida hasta $1,000/ítem"]},
+      {id:"k_g1",bank:"Amex",product:"Business Gold",limit:50000,balance:4800,open:"2025-06-15",exp:"2026-09-15",months:15,paymentDue:15,annualFee:295,annualFeeDate:"2026-06-15",signupBonus:{required:15000,spent:14200,deadline:"2026-05-15",reward:"150,000 Membership Rewards pts"},cliEligible:"2025-12-15",network:"Amex",benefits:[{cat:"Top 2 categorías del mes",mult:"4x MR",icon:"⭐",note:"Las 2 categorías donde más gastes ese ciclo"},{cat:"Vuelos (amextravel.com)",mult:"3x MR",icon:"✈️"},{cat:"Restaurantes",mult:"4x MR",icon:"🍽️"},{cat:"Todo lo demás",mult:"1x MR",icon:"🛒"}],perks:["$240 crédito select business anual","Sin límite de puntos MR","Sin foreign transaction fee","Compra protegida hasta $1,000/ítem"]},
       {id:"k_g2",bank:"Chase",product:"Ink Business Cash",limit:35000,balance:2100,open:"2025-08-01",exp:"2026-11-01",months:15,paymentDue:3,annualFee:0,annualFeeDate:null,signupBonus:{required:6000,spent:6000,deadline:"2026-02-01",reward:"$900 cash back",completed:true},cliEligible:"2026-02-01",network:"Visa",benefits:[{cat:"Telecom/Internet",mult:"5% cash back",icon:"📡"},{cat:"Oficina/Suministros",mult:"5% cash back",icon:"🖨️"},{cat:"Gas/Restaurantes",mult:"2% cash back",icon:"⛽"},{cat:"Todo lo demás",mult:"1% cash back",icon:"🛒"}],perks:["Sin cuota anual","Puntos transferibles Chase UR","Sin foreign transaction fee"]},
       {id:"k_g3",bank:"Chase",product:"Sapphire Reserve",limit:20000,balance:1500,open:"2024-12-01",exp:"2027-06-01",months:18,paymentDue:20,annualFee:550,annualFeeDate:"2025-12-01",signupBonus:{required:4000,spent:4000,deadline:"2025-06-01",reward:"60,000 UR pts",completed:true},cliEligible:"2025-06-01",network:"Visa",benefits:[{cat:"Viajes",mult:"3x UR",icon:"✈️"},{cat:"Restaurantes",mult:"3x UR",icon:"🍽️"},{cat:"Todo lo demás",mult:"1x UR",icon:"🛒"}],perks:["$300 travel credit anual","Priority Pass Select ilimitado","Global Entry/TSA Pre-Check gratis","Trip cancellation/delay insurance"]},
     ],
   },
   c_gordis:{
-    id:"c_gordis",name:"Gordis (Andrea Zunino)",email:"gordis@bighousecredit.com",phone:"(904) 555-0101",ronda:2,joined:"2025-09-01",
+    id:"c_gordis",name:"Gordis (Andrea Zunino)",email:"gordis@bighousecredit.com",phone:"(904) 555-0101",ronda:2,joined:"2025-09-01",onboarded:false,avatar:"GZ",
     advisorNotes:[
       {id:"n3",date:"2026-03-18",text:"Gordis — tu perfil está creciendo muy bien. El próximo paso es solicitar CLI en Barclays a partir del 15 de abril (6 meses). También considera agregar una Amex Blue Business Cash para el portafolio de BH Properties."},
       {id:"n4",date:"2026-02-28",text:"Recuerda activar tu companion certificate de Aviator Red antes de que venza. ¡Es básicamente un vuelo gratis para Gian! Válido hasta octubre 2026."},
@@ -90,8 +103,8 @@ const SEED = {
     ],
   },
   c1:{
-    id:"c1",name:"María Rodríguez",email:"maria@demo.com",phone:"(305) 555-0142",ronda:2,joined:"2025-10-15",
-    advisorNotes:[{id:"n5",date:"2026-03-15",text:"María — excelente progreso. Tu score subió 42 puntos desde que empezamos. Próximo paso: bajar utilización Chase al 10% y estaremos listos para Ronda 3 en junio."}],
+    id:"c1",name:"María Rodríguez",email:"maria@demo.com",phone:"(305) 555-0142",ronda:2,joined:"2025-10-15",onboarded:true,avatar:"MR",
+    messages:[{id:"m3",from:"admin",text:"María, tu score subió 42 puntos. Excelente trabajo!",date:"2026-03-15T09:00:00Z",read:true}],advisorNotes:[{id:"n5",date:"2026-03-15",text:"María — excelente progreso. Tu score subió 42 puntos desde que empezamos. Próximo paso: bajar utilización Chase al 10% y estaremos listos para Ronda 3 en junio."}],
     actionItems:[{id:"a8",text:"Pagar Chase Ink a $2,500 (bajar utilización a 10%)",done:false},{id:"a9",text:"Verificar LLC Illinois activa en Secretary of State",done:true},{id:"a10",text:"Enviar estados de cuenta de últimos 3 meses",done:false}],
     fundingPipeline:[{bank:"Bank of America",product:"Business Advantage Unlimited",limit:"$20,000–$35,000",eta:"Q2 2026",note:"Ronda 3 — proyectado junio 2026"}],
     cards:[
@@ -101,8 +114,8 @@ const SEED = {
     ],
   },
   c2:{
-    id:"c2",name:"Carlos Mendoza",email:"carlos@demo.com",phone:"(786) 555-0289",ronda:1,joined:"2026-01-20",
-    advisorNotes:[{id:"n6",date:"2026-03-22",text:"Carlos — buen comienzo. Prioridad #1: autopago configurado en ambas tarjetas. Un pago tarde nos regresa meses. En 60 días revisamos para Ronda 2."}],
+    id:"c2",name:"Carlos Mendoza",email:"carlos@demo.com",phone:"(786) 555-0289",ronda:1,joined:"2026-01-20",onboarded:false,avatar:"CM",
+    messages:[{id:"m4",from:"admin",text:"Bienvenido Carlos! Este es tu portal BigHouseCredit. Configura primero el autopago.",date:"2026-03-22T11:00:00Z",read:false}],advisorNotes:[{id:"n6",date:"2026-03-22",text:"Carlos — buen comienzo. Prioridad #1: autopago configurado en ambas tarjetas. Un pago tarde nos regresa meses. En 60 días revisamos para Ronda 2."}],
     actionItems:[{id:"a11",text:"Configurar autopago mínimo en Capital One",done:false},{id:"a12",text:"Configurar autopago mínimo en Wells Fargo",done:false},{id:"a13",text:"Abrir cuenta corriente LLC en Wells Fargo",done:false},{id:"a14",text:"Confirmar número EIN con el IRS",done:true}],
     fundingPipeline:[{bank:"Chase",product:"Ink Business Cash",limit:"$15,000–$25,000",eta:"Q3 2026",note:"Esperar 6 meses de historial en Capital One antes de aplicar"}],
     cards:[
@@ -592,7 +605,7 @@ function Admin({clients,save,logout}){
 }
 
 // ─── CLIENT PORTAL ─────────────────────────────────────────────
-function ClientPortal({client,logout}){
+function ClientPortal({client,logout,onSave,allClients,onSendMsg}){
   if(!client) return null;
   const [tab,setTab]=useState("dashboard");
   const [tasks,setTasks]=useState(client.actionItems||[]);
@@ -827,13 +840,13 @@ export default function App(){
 
   useEffect(()=>{
     (async()=>{
-      try{const saved=localStorage.getItem("bh_v3");if(saved)setClients(JSON.parse(saved));else setClients(SEED);}
+      try{const r=await window.storage.get("bh_v3");if(r?.value)setClients(JSON.parse(r.value));else setClients(SEED);}
       catch{setClients(SEED);}
       setReady(true);
     })();
   },[]);
 
-  const save=async data=>{setClients(data);try{localStorage.setItem("bh_v3",JSON.stringify(data));}catch{}};
+  const save=async data=>{setClients(data);try{await window.storage.set("bh_v3",JSON.stringify(data));}catch{}};
 
   if(!ready) return <div style={{minHeight:"100vh",background:BH.bg,display:"flex",alignItems:"center",justifyContent:"center",color:BH.gold,fontFamily:"Georgia,serif",fontSize:18}}>Cargando BigHouse Portal...</div>;
   if(!auth)  return <Login onAuth={setAuth}/>;
