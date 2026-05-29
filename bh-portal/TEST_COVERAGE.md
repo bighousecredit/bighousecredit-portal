@@ -13,43 +13,39 @@ Vite. It is a **financial / credit portal**, so the correctness of credit
 utilization, 0%-APR expiry countdowns, and health scoring is high-stakes — these
 are the first things that should be protected by tests.
 
-## ⚠️ Critical pre-existing issue (not fixed here)
+## ✅ Resolved: corrupted `App.jsx`
 
-The committed `src/App.jsx` at `HEAD` is **corrupted and will not compile**:
+`src/App.jsx` at the prior `HEAD` (commit `ca5dd74`) was **corrupted and would not
+compile**: a 4-line JSON blob with smart/curly quotes and every backtick template
+literal stripped, with `Admin`/`ClientPortal` stubbed out.
 
-- The file is a 4-line JSON blob (`{"returncode":0,"stdout":"...escaped source..."}`)
-  rather than raw JSX.
-- All quotes are smart/curly quotes (`“ ” …`) instead of straight quotes.
-- Every backtick template literal was stripped (0 backticks), leaving invalid
-  syntax like `1px solid ${c}44`.
-- `Admin` and `ClientPortal` are stubbed out.
-
-A clean, complete version exists in git history at commit `5b0463c`
-(`bh-portal/src/App.jsx`, 855 lines). **Recommended fix:** restore `App.jsx` from
-that commit, then point its helpers at `src/lib/helpers.js` (see below). No
-component-level tests can run until the file compiles again.
-
-> This change set deliberately does **not** overwrite `App.jsx` — it only adds
-> new, isolated, importable modules and their tests so nothing existing is lost.
+It has been **restored from the last clean commit `5b0463c`** (855 lines) via
+`git checkout` and then refactored to import its helpers/auth from the new
+`src/lib` modules. `npm run build` now succeeds.
 
 ## What was added
 
-- **`src/lib/helpers.js`** — the pure credit/financial helpers extracted verbatim
-  from `App.jsx` (`daysLeft`, `monthsOld`, `usedPct`, `$$`, `fdt`, `uid`,
-  `aprSt`, `healthScore`) plus the `BH` palette, now individually importable.
+- **`src/lib/helpers.js`** — the pure credit/financial helpers extracted from
+  `App.jsx` (`daysLeft`, `monthsOld`, `usedPct`, `$$`, `fdt`, `uid`, `aprSt`,
+  `healthScore`) plus the `BH` palette. `App.jsx` now imports from here.
 - **`src/lib/helpers.test.js`** — 23 unit tests covering boundaries, clamping,
   and the scoring algorithm. Uses fake timers for deterministic date math.
+- **`src/lib/auth.js`** — the `AUTH` credential map + a pure `authenticate(email, pw)`
+  function (email normalization, no-throw failure path). `App.jsx`'s `Login` now
+  calls this instead of inlining the lookup.
+- **`src/lib/auth.test.js`** — 9 unit tests: valid admin/client, email
+  normalization, wrong/empty/null input, case-sensitive password, AUTH map shape.
 - **Vitest setup** — `vitest`, `@testing-library/react`, `@testing-library/jest-dom`,
   `jsdom`, `@vitest/coverage-v8`; `test` / `test:run` / `coverage` scripts; jsdom
   + v8 coverage configured in `vite.config.js`.
+
+Current result: **32 tests passing** — `src/lib` at ~98% (auth.js 100%, helpers.js ~97%).
 
 ```
 npm install
 npm test          # watch mode
 npm run coverage  # one-shot run + coverage report
 ```
-
-Current result: **23 tests passing**, `helpers.js` at ~97% coverage.
 
 ## Notable finding from the new tests
 
@@ -61,17 +57,17 @@ test in `helpers.test.js`.
 
 ## Recommended next areas to cover (priority order)
 
-1. **Restore `App.jsx`** from `5b0463c` and have it `import` from
-   `src/lib/helpers.js` (removes the duplicated logic; lets component tests run).
-2. **Auth — `supabaseSignIn`** (mock the Supabase client): email is trimmed +
-   lowercased, auth-error path, profile-not-found path, happy-path role/cid.
-3. **Admin data mutations** — `doAddClient`, `doAddCard`, `delCard`, `delClient`,
+Done: ✅ restore + refactor `App.jsx`, ✅ pure helpers, ✅ `authenticate`.
+
+1. **Admin data mutations** — `doAddClient`, `doAddCard`, `delCard`, `delClient`,
    `addNote`: validation guards, numeric coercion (`+nk.limit||0`), immutable updates.
-4. **`App` persistence + routing** — `window.storage` load with `SEED` fallback on
+   (Best done by extracting these into a `src/lib/clients.js` reducer-style module,
+   mirroring the helpers/auth extraction.)
+2. **`App` persistence + routing** — `window.storage` load with `SEED` fallback on
    missing/corrupt data, `save()` persistence, role-based routing.
-5. **Component rendering (React Testing Library)** — `Login` (demo-fill, error,
-   loading, Enter-to-submit), `CardTile` (expand toggle, utilization color
-   thresholds, delete), `BonusBar` (completed / in-progress / null), `HealthCircle`
+3. **Component rendering (React Testing Library)** — `Login` (demo-fill, error,
+   Enter-to-submit), `CardTile` (expand toggle, utilization color thresholds,
+   delete), `BonusBar` (completed / in-progress / null), `HealthCircle`
    (color + label tiers).
 
 ## Suggested coverage targets
