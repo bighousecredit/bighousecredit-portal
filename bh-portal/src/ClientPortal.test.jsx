@@ -56,6 +56,19 @@ describe("<ClientPortal>", () => {
     expect(screen.getByText("Mis Tarjetas de Negocio")).toBeInTheDocument();
   });
 
+  it("renders the benefits tab (spend optimizer)", () => {
+    renderPortal();
+    fireEvent.click(screen.getByText("Beneficios"));
+    expect(screen.getByText("Optimizador de Gastos")).toBeInTheDocument();
+  });
+
+  it("renders the calendar tab with an empty-events state", () => {
+    renderPortal();
+    fireEvent.click(screen.getByText("Calendario"));
+    expect(screen.getByText("Calendario Financiero")).toBeInTheDocument();
+    expect(screen.getByText(/Sin eventos próximos/)).toBeInTheDocument();
+  });
+
   it("returns null when no client is provided", () => {
     const { container } = render(<ClientPortal client={null} logout={vi.fn()} />);
     expect(container).toBeEmptyDOMElement();

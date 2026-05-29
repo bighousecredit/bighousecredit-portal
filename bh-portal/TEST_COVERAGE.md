@@ -67,8 +67,8 @@ It has been **restored from the last clean commit `5b0463c`** (855 lines) via
 All `src/lib` business logic is unit tested (helpers, auth, client/card ops) and
 the leaf UI components have render/interaction tests.
 
-Current result: **83 tests passing** — overall ~93% line coverage; `src/lib` ~99%
-(auth 100%, clients 100%, helpers ~97%); `App.jsx` ~91% (leaf components, atoms,
+Current result: **85 tests passing** — overall ~94% line coverage; `src/lib` ~99%
+(auth 100%, clients 100%, helpers ~97%); `App.jsx` ~94% (leaf components, atoms,
 and the App/Admin/ClientPortal/alerts flows exercised via integration tests).
 
 ```
@@ -94,15 +94,17 @@ Done: ✅ restore + refactor `App.jsx`, ✅ pure helpers, ✅ `authenticate`,
 ✅ `<Admin>` create-client / note / add-card flow tests,
 ✅ `<ClientPortal>` task-toggle / tab-switch tests,
 ✅ Admin alerts tab (CLI-ready + APR-expiry lists, empty state),
+✅ ClientPortal benefits + calendar tabs,
 ✅ CI workflow (`.github/workflows/ci.yml`),
 ✅ coverage thresholds enforced in CI.
 
 Remaining nice-to-haves:
 
-1. **ClientPortal calendar/benefits tabs** — light render assertions for the last
-   couple of uncovered tab branches in `App.jsx`.
-2. **Server-side auth** — the demo authenticates client-side with plaintext
+1. **Server-side auth** — the demo authenticates client-side with plaintext
    passwords (`src/lib/auth.js`); a production build should move this to a backend.
+2. **Event-branch fixtures** — a few `ClientPortal` event branches (signup-bonus,
+   annual-fee reminders) are only hit with cards carrying those fields; add a
+   card-rich client fixture to cover them if desired.
 
 ## Suggested coverage targets
 
