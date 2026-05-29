@@ -45,6 +45,10 @@ It has been **restored from the last clean commit `5b0463c`** (855 lines) via
   (`Login`, `BonusBar`, `CardTile`, `HealthCircle`), exported by name from
   `App.jsx` for testing. Covers login success/error/demo-fill/Enter/password
   toggle, bonus states, health-score label tiers, and card expand + delete.
+- **`src/App.root.test.jsx`** — `<App>` integration tests with a mocked
+  `window.storage`: loading state → login, SEED fallback on corrupt JSON,
+  admin → Admin panel routing, client → ClientPortal routing, and loading
+  persisted clients instead of SEED.
 - **Vitest setup** — `vitest`, `@testing-library/react`, `@testing-library/jest-dom`,
   `jsdom`, `@vitest/coverage-v8`; `test` / `test:run` / `coverage` scripts; jsdom
   + v8 coverage configured in `vite.config.js`.
@@ -52,8 +56,9 @@ It has been **restored from the last clean commit `5b0463c`** (855 lines) via
 All `src/lib` business logic is unit tested (helpers, auth, client/card ops) and
 the leaf UI components have render/interaction tests.
 
-Current result: **66 tests passing** — overall ~50% line coverage; `src/lib` ~99%
-(auth 100%, clients 100%, helpers ~97%); `App.jsx` ~40% (leaf components + atoms).
+Current result: **71 tests passing** — overall ~75% line coverage; `src/lib` ~99%
+(auth 100%, clients 100%, helpers ~97%); `App.jsx` ~70% (leaf components, atoms,
+and the App/Admin/ClientPortal flows exercised via the login integration tests).
 
 ```
 npm install
@@ -73,15 +78,15 @@ test in `helpers.test.js`.
 
 Done: ✅ restore + refactor `App.jsx`, ✅ pure helpers, ✅ `authenticate`,
 ✅ Admin data ops + selectors (`src/lib/clients.js`),
-✅ leaf component render/interaction tests (`Login`, `BonusBar`, `CardTile`, `HealthCircle`).
+✅ leaf component render/interaction tests (`Login`, `BonusBar`, `CardTile`, `HealthCircle`),
+✅ `<App>` persistence + routing integration tests.
 
-1. **`App` persistence + routing** — `window.storage` load with `SEED` fallback on
-   missing/corrupt data, `save()` persistence, role-based routing (admin vs client
-   vs login). Best tested by mocking `window.storage` and rendering `<App/>`.
-2. **`Admin` / `ClientPortal` container tests** — now that the data logic is
-   extracted and unit tested, add a few integration tests exercising the panels
-   (add/delete client+card flows, tab switching, alerts counts).
-3. **CI** — run `npm run coverage` on every PR and enforce a threshold for `src/lib`.
+1. **`Admin` / `ClientPortal` deeper flows** — add/delete client+card via the UI
+   (asserting `window.storage.set` is persisted), tab switching, alert counts,
+   advisor-note posting, and task toggling.
+2. **CI** — run `npm run coverage` on every PR and enforce a coverage threshold
+   (e.g. 90% for `src/lib`, 70% overall). The `vite.config.js` `test.coverage`
+   block already emits text + HTML reports.
 
 ## Suggested coverage targets
 
