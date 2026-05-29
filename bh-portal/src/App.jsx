@@ -810,7 +810,7 @@ function ClientPortal({client,logout,onSave,allClients,onSendMsg}){
 // ─── ROOT ──────────────────────────────────────────────────────
 // Named exports so individual components can be rendered in tests
 // (see src/App.test.jsx). The default export remains the App root.
-export { Login, BonusBar, CardTile, HealthCircle };
+export { Login, BonusBar, CardTile, HealthCircle, Admin, ClientPortal };
 
 export default function App(){
   const [auth,setAuth]=useState(null);

@@ -49,6 +49,11 @@ It has been **restored from the last clean commit `5b0463c`** (855 lines) via
   `window.storage`: loading state → login, SEED fallback on corrupt JSON,
   admin → Admin panel routing, client → ClientPortal routing, and loading
   persisted clients instead of SEED.
+- **`src/Admin.test.jsx`** — `<Admin>` flow tests: overview KPIs + client list,
+  create-client modal (and the blank-input guard), advisor-note posting, and the
+  add-card modal — each asserting the `save()` payload that gets persisted.
+- **`.github/workflows/ci.yml`** — CI runs `npm ci`, `npm run build`, and
+  `npm run coverage` on every push to `main` and every PR.
 - **Vitest setup** — `vitest`, `@testing-library/react`, `@testing-library/jest-dom`,
   `jsdom`, `@vitest/coverage-v8`; `test` / `test:run` / `coverage` scripts; jsdom
   + v8 coverage configured in `vite.config.js`.
@@ -56,9 +61,9 @@ It has been **restored from the last clean commit `5b0463c`** (855 lines) via
 All `src/lib` business logic is unit tested (helpers, auth, client/card ops) and
 the leaf UI components have render/interaction tests.
 
-Current result: **71 tests passing** — overall ~75% line coverage; `src/lib` ~99%
-(auth 100%, clients 100%, helpers ~97%); `App.jsx` ~70% (leaf components, atoms,
-and the App/Admin/ClientPortal flows exercised via the login integration tests).
+Current result: **76 tests passing** — overall ~85% line coverage; `src/lib` ~99%
+(auth 100%, clients 100%, helpers ~97%); `App.jsx` ~82% (leaf components, atoms,
+and the App/Admin/ClientPortal flows exercised via integration tests).
 
 ```
 npm install
@@ -79,14 +84,18 @@ test in `helpers.test.js`.
 Done: ✅ restore + refactor `App.jsx`, ✅ pure helpers, ✅ `authenticate`,
 ✅ Admin data ops + selectors (`src/lib/clients.js`),
 ✅ leaf component render/interaction tests (`Login`, `BonusBar`, `CardTile`, `HealthCircle`),
-✅ `<App>` persistence + routing integration tests.
+✅ `<App>` persistence + routing integration tests,
+✅ `<Admin>` create-client / note / add-card flow tests,
+✅ CI workflow (`.github/workflows/ci.yml`).
 
-1. **`Admin` / `ClientPortal` deeper flows** — add/delete client+card via the UI
-   (asserting `window.storage.set` is persisted), tab switching, alert counts,
-   advisor-note posting, and task toggling.
-2. **CI** — run `npm run coverage` on every PR and enforce a coverage threshold
-   (e.g. 90% for `src/lib`, 70% overall). The `vite.config.js` `test.coverage`
-   block already emits text + HTML reports.
+Remaining nice-to-haves:
+
+1. **`ClientPortal` interactions** — task toggling, tab switching (Estrategia /
+   Beneficios / Calendario), and dashboard totals.
+2. **Coverage thresholds** — add `test.coverage.thresholds` to `vite.config.js`
+   (e.g. 90% for `src/lib`, 75% overall) so CI fails on regressions.
+3. **Alerts tab** — assert the CLI-ready and APR-expiry lists in the Admin alerts
+   view against known fixture dates.
 
 ## Suggested coverage targets
 
