@@ -104,3 +104,31 @@ describe("<Admin>", () => {
     expect(cards[1]).toMatchObject({ bank: "Amex", open: "2026-01-01", exp: "2027-01-01" });
   });
 });
+
+describe("<Admin> alerts tab", () => {
+  const baseCard = { network: "Visa", balance: 0, paymentDue: 1, annualFee: 0, signupBonus: null, benefits: [], perks: [] };
+
+  const renderWith = (cards) => {
+    render(<Admin clients={{ c1: { id: "c1", name: "María Rodríguez", cards } }} save={vi.fn()} logout={vi.fn()} />);
+    fireEvent.click(screen.getByText(/^Alertas/));
+  };
+
+  it("lists CLI-ready cards and 0% APR cards about to expire", () => {
+    renderWith([
+      { ...baseCard, id: "k1", bank: "Chase", product: "Ink", limit: 25000, exp: "2028-01-01", cliEligible: "2026-01-01" }, // CLI ready
+      { ...baseCard, id: "k2", bank: "Amex", product: "Gold", limit: 50000, exp: "2026-06-15", cliEligible: "2028-01-01" }, // expiring ~17d
+    ]);
+    expect(screen.getByText(/CLI DISPONIBLES/)).toBeInTheDocument();
+    expect(screen.getByText("María Rodríguez — Chase Ink")).toBeInTheDocument();
+    expect(screen.getByText(/0% APR PRÓXIMOS A VENCER/)).toBeInTheDocument();
+    expect(screen.getByText("María Rodríguez — Amex Gold")).toBeInTheDocument();
+  });
+
+  it("shows the empty state and no CLI section when nothing is due", () => {
+    renderWith([
+      { ...baseCard, id: "k1", bank: "Chase", product: "Ink", limit: 25000, exp: "2028-01-01", cliEligible: "2028-01-01" },
+    ]);
+    expect(screen.getByText("✅ Ninguna tarjeta expira en 90 días")).toBeInTheDocument();
+    expect(screen.queryByText(/CLI DISPONIBLES/)).not.toBeInTheDocument();
+  });
+});

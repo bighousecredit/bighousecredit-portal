@@ -67,9 +67,9 @@ It has been **restored from the last clean commit `5b0463c`** (855 lines) via
 All `src/lib` business logic is unit tested (helpers, auth, client/card ops) and
 the leaf UI components have render/interaction tests.
 
-Current result: **81 tests passing** — overall ~88% line coverage; `src/lib` ~99%
-(auth 100%, clients 100%, helpers ~97%); `App.jsx` ~86% (leaf components, atoms,
-and the App/Admin/ClientPortal flows exercised via integration tests).
+Current result: **83 tests passing** — overall ~93% line coverage; `src/lib` ~99%
+(auth 100%, clients 100%, helpers ~97%); `App.jsx` ~91% (leaf components, atoms,
+and the App/Admin/ClientPortal/alerts flows exercised via integration tests).
 
 ```
 npm install
@@ -93,15 +93,16 @@ Done: ✅ restore + refactor `App.jsx`, ✅ pure helpers, ✅ `authenticate`,
 ✅ `<App>` persistence + routing integration tests,
 ✅ `<Admin>` create-client / note / add-card flow tests,
 ✅ `<ClientPortal>` task-toggle / tab-switch tests,
+✅ Admin alerts tab (CLI-ready + APR-expiry lists, empty state),
 ✅ CI workflow (`.github/workflows/ci.yml`),
 ✅ coverage thresholds enforced in CI.
 
 Remaining nice-to-haves:
 
-1. **Admin alerts tab** — assert the CLI-ready and APR-expiry lists against known
-   fixture dates (the alert-card branches are the main uncovered region of `App.jsx`).
-2. **ClientPortal calendar/benefits tabs** — light render assertions to cover the
-   remaining tab branches.
+1. **ClientPortal calendar/benefits tabs** — light render assertions for the last
+   couple of uncovered tab branches in `App.jsx`.
+2. **Server-side auth** — the demo authenticates client-side with plaintext
+   passwords (`src/lib/auth.js`); a production build should move this to a backend.
 
 ## Suggested coverage targets
 
