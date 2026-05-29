@@ -35,11 +35,17 @@ It has been **restored from the last clean commit `5b0463c`** (855 lines) via
   calls this instead of inlining the lookup.
 - **`src/lib/auth.test.js`** — 9 unit tests: valid admin/client, email
   normalization, wrong/empty/null input, case-sensitive password, AUTH map shape.
+- **`src/lib/clients.js`** — reducer-style pure transforms for the Admin panel
+  (`addClient`, `addCard`, `removeCard`, `removeClient`, `addNote`, `normalizeCard`)
+  plus selectors (`allCards`, `expiringWithin`, `cliReadyCards`, `totalFunding`).
+  `Admin` in `App.jsx` now delegates to these instead of inlining the logic.
+- **`src/lib/clients.test.js`** — unit tests covering validation guards, numeric
+  coercion, immutability (no input mutation), note prepend/init, and all selectors.
 - **Vitest setup** — `vitest`, `@testing-library/react`, `@testing-library/jest-dom`,
   `jsdom`, `@vitest/coverage-v8`; `test` / `test:run` / `coverage` scripts; jsdom
   + v8 coverage configured in `vite.config.js`.
 
-Current result: **32 tests passing** — `src/lib` at ~98% (auth.js 100%, helpers.js ~97%).
+All `src/lib` business logic is now unit tested (helpers, auth, client/card ops).
 
 ```
 npm install
@@ -57,15 +63,12 @@ test in `helpers.test.js`.
 
 ## Recommended next areas to cover (priority order)
 
-Done: ✅ restore + refactor `App.jsx`, ✅ pure helpers, ✅ `authenticate`.
+Done: ✅ restore + refactor `App.jsx`, ✅ pure helpers, ✅ `authenticate`,
+✅ Admin data ops + selectors (`src/lib/clients.js`).
 
-1. **Admin data mutations** — `doAddClient`, `doAddCard`, `delCard`, `delClient`,
-   `addNote`: validation guards, numeric coercion (`+nk.limit||0`), immutable updates.
-   (Best done by extracting these into a `src/lib/clients.js` reducer-style module,
-   mirroring the helpers/auth extraction.)
-2. **`App` persistence + routing** — `window.storage` load with `SEED` fallback on
+1. **`App` persistence + routing** — `window.storage` load with `SEED` fallback on
    missing/corrupt data, `save()` persistence, role-based routing.
-3. **Component rendering (React Testing Library)** — `Login` (demo-fill, error,
+2. **Component rendering (React Testing Library)** — `Login` (demo-fill, error,
    Enter-to-submit), `CardTile` (expand toggle, utilization color thresholds,
    delete), `BonusBar` (completed / in-progress / null), `HealthCircle`
    (color + label tiers).

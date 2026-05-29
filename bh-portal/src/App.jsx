@@ -26,6 +26,14 @@ import { BH, daysLeft, monthsOld, usedPct, $$, fdt, uid, aprSt, healthScore } fr
 // src/lib/auth.test.js).
 import { authenticate } from "./lib/auth.js";
 
+// ─── CLIENT/CARD OPERATIONS ─────────────────────────────────────
+// Pure data transforms + selectors for the Admin panel (unit tested in
+// src/lib/clients.test.js).
+import {
+  addClient, addCard as appendCard, removeCard, removeClient, addNote as addAdvisorNote,
+  allCards as selectAllCards, expiringWithin, cliReadyCards, totalFunding,
+} from "./lib/clients.js";
+
 // ─── SEED DATA ─────────────────────────────────────────────────
 const SEED = {
   c_gian:{
@@ -330,31 +338,30 @@ function Admin({clients,save,logout}){
   const [nk,setNk]=useState({bank:"",product:"",limit:"",balance:"",open:"",exp:"",months:"12",paymentDue:"",annualFee:"0",cliEligible:""});
   const [noteText,setNoteText]=useState("");
 
-  const allCards=Object.values(clients).flatMap(c=>c.cards.map(k=>({...k,cname:c.name,cid:c.id})));
-  const exp90=allCards.filter(k=>{const d=daysLeft(k.exp);return d>=0&&d<=90;});
-  const exp30=allCards.filter(k=>{const d=daysLeft(k.exp);return d>=0&&d<=30;});
-  const cliReady=allCards.filter(k=>daysLeft(k.cliEligible)<=0);
-  const totFund=Object.values(clients).reduce((s,c)=>s+c.cards.reduce((s2,k)=>s2+k.limit,0),0);
+  const allCards=selectAllCards(clients);
+  const exp90=expiringWithin(allCards,90);
+  const exp30=expiringWithin(allCards,30);
+  const cliReady=cliReadyCards(allCards);
+  const totFund=totalFunding(clients);
 
   const doAddClient=()=>{
-    if(!nc.name||!nc.email)return;
-    const id=uid();
-    save({...clients,[id]:{id,...nc,joined:new Date().toISOString().slice(0,10),cards:[],advisorNotes:[],actionItems:[],fundingPipeline:[]}});
+    const next=addClient(clients,nc);
+    if(!next)return;
+    save(next);
     setNc({name:"",email:"",phone:"",ronda:1});setAddCl(false);
   };
   const doAddCard=()=>{
-    if(!nk.bank||!nk.open||!nk.exp)return;
-    const card={id:uid(),bank:nk.bank,product:nk.product,limit:+nk.limit||0,balance:+nk.balance||0,open:nk.open,exp:nk.exp,months:+nk.months||12,paymentDue:+nk.paymentDue||1,annualFee:+nk.annualFee||0,annualFeeDate:null,cliEligible:nk.cliEligible||"",network:"Visa",benefits:[],perks:[]};
-    save({...clients,[sel]:{...clients[sel],cards:[...clients[sel].cards,card]}});
+    const next=appendCard(clients,sel,nk);
+    if(!next)return;
+    save(next);
     setNk({bank:"",product:"",limit:"",balance:"",open:"",exp:"",months:"12",paymentDue:"",annualFee:"0",cliEligible:""});setAddCard(false);
   };
-  const delCard=(cid,kid)=>save({...clients,[cid]:{...clients[cid],cards:clients[cid].cards.filter(k=>k.id!==kid)}});
-  const delClient=cid=>{const cp={...clients};delete cp[cid];save(cp);if(sel===cid)setSel(null);};
+  const delCard=(cid,kid)=>save(removeCard(clients,cid,kid));
+  const delClient=cid=>{save(removeClient(clients,cid));if(sel===cid)setSel(null);};
   const addNote=cid=>{
-    if(!noteText.trim())return;
-    const note={id:uid(),date:new Date().toISOString().slice(0,10),text:noteText.trim()};
-    const cl=clients[cid];
-    save({...clients,[cid]:{...cl,advisorNotes:[note,...(cl.advisorNotes||[])]}});
+    const next=addAdvisorNote(clients,cid,noteText);
+    if(!next)return;
+    save(next);
     setNoteText("");
   };
 
